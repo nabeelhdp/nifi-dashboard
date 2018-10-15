@@ -37,11 +37,18 @@ def get_config_params(config_file):
 def get_token():
   pass
 
-def get_system_diagnostics():
-  pass
+def get_stats(headers,url,ctx):
+  req = urllib2.Request(url,headers=headers)
+  resp = urllib2.urlopen(req,context=ctx)
+  stats = json.loads(resp.read())
+  return stats
 
-def get_processor_stats():
-  pass
+def set_ssl(context):
+  # Ignore SSL - equivalent to cancelling
+  context.check_hostname = False
+  context.verify_mode = ssl.CERT_NONE
+  return context
+
 
 def main():
 
@@ -50,10 +57,8 @@ def main():
   config_dict = {}
   config_dict = get_config_params(config_file)
 
-  # Ignore SSL - equivalent to cancelling
-  ctx = ssl.create_default_context()
-  ctx.check_hostname = False
-  ctx.verify_mode = ssl.CERT_NONE
+  context = ssl.create_default_context()
+  ctx = set_ssl(context)
 
   data = {}
   data['username'] = config_dict['user']
@@ -63,8 +68,8 @@ def main():
   headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
 
   req = urllib2.Request(token_url,url_values,headers=headers)
-  # Debug friendly approach
   httpHandler = urllib2.HTTPSHandler(context=ctx)
+  # Set debug levels if needed
   #httpHandler.set_http_debuglevel(1)
   opener = urllib2.build_opener(httpHandler)
 
@@ -74,16 +79,17 @@ def main():
     token = 'Bearer ' + tdata
 
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
+
+    flow_status_url = 'https://%s:%d/nifi-api/flow/status' % (config_dict['host'], config_dict['port'])
+    flow_status = get_stats(headers, flow_status_url, ctx)
+    print json.dumps(flow_status,indent =2)
+
     diagnostic_url = 'https://%s:%d/nifi-api/system-diagnostics' % (config_dict['host'], config_dict['port'])
-    req = urllib2.Request(diagnostic_url,headers=headers)
-    diag = urllib2.urlopen(req,context=ctx)
-    diagnostics = json.loads(diag.read())
+    diagnostics = get_stats(headers, diagnostic_url, ctx)
     print json.dumps(diagnostics,indent =2)
 
     processor_url = 'https://%s:%d/nifi-api/processors/%s' % (config_dict['host'], config_dict['port'] ,config_dict['processor_id'])
-    req = urllib2.Request(processor_url,headers=headers)
-    processor_req = urllib2.urlopen(req,context=ctx)
-    processor_stats = json.loads(processor_req.read())
+    processor_stats = get_stats(headers,processor_url,ctx)
     print "Processor ID: ", processor_stats['component']['id']
     print "State", processor_stats['component']['state']
     print "Stats : ",json.dumps(processor_stats['status']['aggregateSnapshot'],indent =2 )
