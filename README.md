@@ -1,4 +1,4 @@
-# poll_nifi_stats
+# Poll NiFi stats
 Authenticate against NiFi login and poll stats from NiFi instance
 
 Update `config.ini` and run as 
