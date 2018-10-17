@@ -1,6 +1,6 @@
 
 from bottle import route, run, template
-from nifi import get_flow_status,get_system_diagnostics,get_processor_stats,get_pg_details
+from nifi_poll import get_flow_status,get_system_diagnostics,get_processor_stats,get_pg_details
 import socket
 
 
