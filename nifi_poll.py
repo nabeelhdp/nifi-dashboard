@@ -42,7 +42,7 @@ def get_auth_request():
   config_dict = get_config_params()
   data = {}
   data['username'] = config_dict['user']
-  data['password'] = getpass.getpass()
+  data['password'] = 'HWX@Bugis123'
   url_values = urllib.urlencode(data)
   token_url = "https://%s:%d/nifi-api/access/token" % (config_dict['host'], config_dict['port'])
   headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
@@ -127,13 +127,15 @@ def get_pg_details():
     list_pgs = get_stats(headers, list_url, set_ssl())
     pgstats = {}
     for p in list_pgs['processGroups'] :
+      #print json.dumps(p,indent=2)
       pgstats[p['id']] = {}
       pgstats[p['id']]['name'] = p['status']['aggregateSnapshot']['name']
       pgstats[p['id']]['flow_files_queued'] = p['status']['aggregateSnapshot']['flowFilesQueued']
+      pgstats[p['id']]['bytesQueued'] = p['status']['aggregateSnapshot']['bytesQueued']
+      pgstats[p['id']]['activeThreadCount'] = p['status']['aggregateSnapshot']['activeThreadCount']
       # print p['id'] + " " + str(p['status']['aggregateSnapshot']['name']) +  " " + str(p['status']['aggregateSnapshot']['flowFilesQueued'])
       # if(p['status']['aggregateSnapshot']['flowFilesQueued'] > 0):
       #  print "{y:%.2f %s %s %s" % (float(p['status']['aggregateSnapshot']['flowFilesQueued'])*100.0/(flow_status['controllerStatus']['flowFilesQueued'] * 1.0) , ", label:\"" , str(p['status']['aggregateSnapshot']['id']),"\"},")
-
     return pgstats
   else:
     return token
