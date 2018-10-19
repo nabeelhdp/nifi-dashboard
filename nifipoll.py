@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 
 import urllib2
@@ -33,7 +34,7 @@ def get_config_params():
   config_dict['host'] = parser.get('nifi_config','host')
   config_dict['port'] = int(parser.get('nifi_config','port'))
   config_dict["user"] = parser.get('nifi_config','user')
-  config_dict["processor_id"] = parser.get('nifi_config', 'processor_id')
+  config_dict["password"] = parser.get('nifi_config','password')
 
   return config_dict
 
@@ -41,7 +42,7 @@ def get_auth_request():
   config_dict = get_config_params()
   data = {}
   data['username'] = config_dict['user']
-  data['password'] = getpass.getpass()
+  data['password'] = config_dict['password']
   url_values = urllib.urlencode(data)
   token_url = "https://%s:%d/nifi-api/access/token" % (config_dict['host'], config_dict['port'])
   headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
@@ -105,9 +106,10 @@ def get_system_diagnostics():
 def get_processor_stats():
   token = get_auth_token()
   config_dict = get_config_params()
+  processor_id = 'XXX'
   if token.startswith('Bearer'):
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
-    processor_url = 'https://%s:%d/nifi-api/processors/%s' % (config_dict['host'], config_dict['port'] ,config_dict['processor_id'])
+    processor_url = 'https://%s:%d/nifi-api/processors/%s' % (config_dict['host'], config_dict['port'] ,processor_id)
     processor_stats = get_stats(headers,processor_url,set_ssl())
     #print "Processor ID: ", processor_stats['component']['id']
     #print "State", processor_stats['component']['state']
@@ -129,7 +131,7 @@ def get_pg_details():
       #print json.dumps(p,indent=2)
       pgstats[p['id']] = {}
       pgstats[p['id']]['name'] = p['status']['aggregateSnapshot']['name']
-      pgstats[p['id']]['flow_files_queued'] = p['status']['aggregateSnapshot']['flowFilesQueued']
+      pgstats[p['id']]['flowFilesQueued'] = p['status']['aggregateSnapshot']['flowFilesQueued']
       pgstats[p['id']]['bytesQueued'] = p['status']['aggregateSnapshot']['bytesQueued']
       pgstats[p['id']]['activeThreadCount'] = p['status']['aggregateSnapshot']['activeThreadCount']
       # print p['id'] + " " + str(p['status']['aggregateSnapshot']['name']) +  " " + str(p['status']['aggregateSnapshot']['flowFilesQueued'])
