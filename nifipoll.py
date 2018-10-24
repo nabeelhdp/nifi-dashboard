@@ -118,25 +118,27 @@ def get_processor_stats():
   else:
     return token
 
-def get_pg_details():
+def get_pg_details(pg_id='root'):
 
   token = get_auth_token()
   config_dict = get_config_params()
   if token.startswith('Bearer'):
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
-    list_url = 'https://%s:%d/nifi-api/process-groups/root/process-groups' % (config_dict['host'], config_dict['port'])
+    list_url = 'https://%s:%d/nifi-api/process-groups/%s/process-groups' % (config_dict['host'], config_dict['port'], pg_id)
+    print list_url
     list_pgs = get_stats(headers, list_url, set_ssl())
     pgstats = {}
     for p in list_pgs['processGroups'] :
       #print json.dumps(p,indent=2)
-      pgstats[p['id']] = {}
-      pgstats[p['id']]['name'] = p['status']['aggregateSnapshot']['name']
-      pgstats[p['id']]['flowFilesQueued'] = p['status']['aggregateSnapshot']['flowFilesQueued']
-      pgstats[p['id']]['bytesQueued'] = p['status']['aggregateSnapshot']['bytesQueued']
-      pgstats[p['id']]['activeThreadCount'] = p['status']['aggregateSnapshot']['activeThreadCount']
-      # print p['id'] + " " + str(p['status']['aggregateSnapshot']['name']) +  " " + str(p['status']['aggregateSnapshot']['flowFilesQueued'])
-      # if(p['status']['aggregateSnapshot']['flowFilesQueued'] > 0):
-      #  print "{y:%.2f %s %s %s" % (float(p['status']['aggregateSnapshot']['flowFilesQueued'])*100.0/(flow_status['controllerStatus']['flowFilesQueued'] * 1.0) , ", label:\"" , str(p['status']['aggregateSnapshot']['id']),"\"},")
+      if(int(p['status']['aggregateSnapshot']['flowFilesQueued']) > 0 or int(p['status']['aggregateSnapshot']['activeThreadCount']) > 0 or int(p['status']['aggregateSnapshot']['bytesQueued']) > 0):
+        pgstats[p['id']] = {}
+        pgstats[p['id']]['name'] = p['status']['aggregateSnapshot']['name']
+        pgstats[p['id']]['flowFilesQueued'] = p['status']['aggregateSnapshot']['flowFilesQueued']
+        pgstats[p['id']]['bytesQueued'] = p['status']['aggregateSnapshot']['bytesQueued']
+        pgstats[p['id']]['activeThreadCount'] = p['status']['aggregateSnapshot']['activeThreadCount']
+        # print p['id'] + " " + str(p['status']['aggregateSnapshot']['name']) +  " " + str(p['status']['aggregateSnapshot']['flowFilesQueued'])
+        # if(p['status']['aggregateSnapshot']['flowFilesQueued'] > 0):
+        #  print "{y:%.2f %s %s %s" % (float(p['status']['aggregateSnapshot']['flowFilesQueued'])*100.0/(flow_status['controllerStatus']['flowFilesQueued'] * 1.0) , ", label:\"" , str(p['status']['aggregateSnapshot']['id']),"\"},")
     return pgstats
   else:
     return token
