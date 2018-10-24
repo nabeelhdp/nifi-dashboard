@@ -51,17 +51,17 @@ def serve_pie():
       nifi_response = get_nifi_stats(request.forms.get('pgid'))
     else :
       nifi_response = get_nifi_stats()
-    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_stats(nifi_response)
+    name,ffq,t_ffq,bq,t_bq,atc,t_atc = read_nifi_stats(nifi_response)
     return template(
              'pie', pgnames = json.dumps(name) ,
-             flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
+             flowfilesQueued = json.dumps(ffq), total = t_ffq )
 
 @route('/donut')
 def serve_donut():
     nifi_response = {}
     nifi_response = get_nifi_stats()
-    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_stats(nifi_response)
-    return template('donut', pgnames = json.dumps(name) , flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
+    name,ffq,t_ffq,bq,t_bq,atc,t_atc = read_nifi_stats(nifi_response)
+    return template('donut', pgnames = json.dumps(name) , flowfilesQueued = json.dumps(ffq), total = t_ffq )
 
 
 run(host=socket.getfqdn(), port=8080, debug=True)
