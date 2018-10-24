@@ -56,24 +56,12 @@ def serve_pie():
              'pie', pgnames = json.dumps(name) ,
              flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
 
-#@route('/pie')
-#def serve_pie():
-#    nifi_response = get_nifi_stats()
-#    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_stats(nifi_response)
-#    return template(
-#             'pie', pgnames = json.dumps(name) ,
-#             flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
-
 @route('/donut')
 def serve_donut():
-    return template(
-             'donut', pgnames = json.dumps(name) ,
-             activeThreads = json.dumps(activeThreadCount), total_threads = int(total_activeThreadCount),
-             flowfilesQueued = json.dumps(flowFilesQueued), total_flowqueue = int(total_flowFilesQueued),
-             bytesQueued = json.dumps(bytesQueued), total_bytes = int(total_bytesQueued) )
+    nifi_response = {}
+    nifi_response = get_nifi_stats()
+    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_stats(nifi_response)
+    return template('donut', pgnames = json.dumps(name) , flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
 
-@route('/donut2')
-def serve_donut2():
-    return template('donut2', pgnames = json.dumps(name) , flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
 
 run(host=socket.getfqdn(), port=8080, debug=True)
