@@ -1,26 +1,39 @@
+
 import json
-from bottle import route, run, template, static_file
+from bottle import route, run, template, static_file, request
 from nifipoll import get_flow_status,get_system_diagnostics,get_processor_stats,get_pg_details
 import socket
 
+def get_nifi_stats(pg="root"):
 
-HOST = socket.getfqdn()
+  nifi_response = {}
+  nifi_response = get_pg_details(pg)
+  return nifi_response
 
-pgstats = {}
-pgstats = get_pg_details()
-name = {}
-flowFilesQueued = {}
-bytesQueued = {}
-total_flowFilesQueued = 0
+def read_nifi_stats(stats):
+  name = {}
+  flowFilesQueued = {}
+  bytesQueued = {}
+  total_flowFilesQueued = 0
+  total_bytesQueued = 0
+  activeThreadCount = {}
+  total_activeThreadCount = 426
 
-for key,value in pgstats.iteritems():
+  for key,value in stats.iteritems():
 
-  name[key] = value['name']
-  flowFilesQueued[key] = value['flowFilesQueued']
-  total_flowFilesQueued += value['flowFilesQueued']
-  bytesQueued[key] = value['bytesQueued']
+      name[key] = value['name']
+      print value['name']
 
-print total_flowFilesQueued
+      flowFilesQueued[key] = int(value['flowFilesQueued'])
+      total_flowFilesQueued += int(value['flowFilesQueued'])
+
+      bytesQueued[key] = int(value['bytesQueued'])
+      total_bytesQueued += int(value['bytesQueued'])
+
+      activeThreadCount[key] = int(value['activeThreadCount'])
+
+  return name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount
+
 
 @route('/static/:path#.+#', name='static')
 def static(path):
@@ -30,8 +43,37 @@ def static(path):
 def serve_homepage():
     return template('disp_table',pgnames = name, dataparam = bytesQueued, cases = len(name))
 
-@route('/pie')
+@route('/pie', method=['POST','GET'])
 def serve_pie():
-    return template('pie', dataparam = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
+    nifi_response = {}
+    if (request.forms.get('pgid')) :
+      print('pgid = ' + request.forms.get('pgid'))
+      nifi_response = get_nifi_stats(request.forms.get('pgid'))
+    else :
+      nifi_response = get_nifi_stats()
+    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_stats(nifi_response)
+    return template(
+             'pie', pgnames = json.dumps(name) ,
+             flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
 
-run(host=HOST, port=8080, debug=True)
+#@route('/pie')
+#def serve_pie():
+#    nifi_response = get_nifi_stats()
+#    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_stats(nifi_response)
+#    return template(
+#             'pie', pgnames = json.dumps(name) ,
+#             flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
+
+@route('/donut')
+def serve_donut():
+    return template(
+             'donut', pgnames = json.dumps(name) ,
+             activeThreads = json.dumps(activeThreadCount), total_threads = int(total_activeThreadCount),
+             flowfilesQueued = json.dumps(flowFilesQueued), total_flowqueue = int(total_flowFilesQueued),
+             bytesQueued = json.dumps(bytesQueued), total_bytes = int(total_bytesQueued) )
+
+@route('/donut2')
+def serve_donut2():
+    return template('donut2', pgnames = json.dumps(name) , flowfilesQueued = json.dumps(flowFilesQueued), total = total_flowFilesQueued )
+
+run(host=socket.getfqdn(), port=8080, debug=True)
