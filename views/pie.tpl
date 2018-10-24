@@ -20,17 +20,32 @@ window.onload = function() {
                 }]
         });
 
-        var pgflowfiles = JSON.parse('{{!dataparam}}');
+        var pgflowfiles = JSON.parse('{{!flowfilesQueued}}');
+        var pgnames = JSON.parse('{{!pgnames}}');
         var y_val = 0
 
         for (items in pgflowfiles){
                 y_val = (pgflowfiles[items]*100/'{{!total}}')
-                chart.options.data[0].dataPoints.push({y: y_val,label: items})
+                if(y_val>1){chart.options.data[0].dataPoints.push({y: y_val,label: items + " " + pgnames[items], click : onClick})}
                 }
 
         chart.render();
 
         };
+
+function onClick(e){
+        var answer = confirm(  " Drill down into stats for Processor Group  :" + e.dataPoint.label + " ?" );
+        if (answer == true){
+                var req = new XMLHttpRequest();
+                req.open('POST', '/pie', true);
+                var pgid = e.dataPoint.label.split(" ")[0]
+                console.log('dataPOint.label is ' + pgid);
+                params = 'pgid=' + pgid;
+                req.send(params);
+                location.reload()
+                }
+        else {}
+   }
 
 
 </script>
