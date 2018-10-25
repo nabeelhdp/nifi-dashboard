@@ -34,7 +34,6 @@ def get_config_params():
   config_dict['host'] = parser.get('nifi_config','host')
   config_dict['port'] = int(parser.get('nifi_config','port'))
   config_dict["user"] = parser.get('nifi_config','user')
-  config_dict["password"] = parser.get('nifi_config','password')
 
   return config_dict
 
@@ -42,7 +41,7 @@ def get_auth_request():
   config_dict = get_config_params()
   data = {}
   data['username'] = config_dict['user']
-  data['password'] = config_dict['password']
+  data['password'] = 'HWX@Bugis123'
   url_values = urllib.urlencode(data)
   token_url = "https://%s:%d/nifi-api/access/token" % (config_dict['host'], config_dict['port'])
   headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
@@ -85,7 +84,6 @@ def get_flow_status():
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
     flow_status_url = 'https://%s:%d/nifi-api/flow/status' % (config_dict['host'], config_dict['port'])
     flow_status = get_stats(headers, flow_status_url, set_ssl())
-    #print json.dumps(flow_status,indent =2)
     return flow_status['controllerStatus']['flowFilesQueued']
   else:
     return token
@@ -97,7 +95,6 @@ def get_system_diagnostics():
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
     diagnostic_url = 'https://%s:%d/nifi-api/system-diagnostics' % (config_dict['host'], config_dict['port'])
     system_diagnostics = get_stats(headers, diagnostic_url, set_ssl())
-    #print json.dumps(diagnostics,indent =2)
     return system_diagnostics
   else:
     return token
@@ -111,9 +108,6 @@ def get_processor_stats():
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
     processor_url = 'https://%s:%d/nifi-api/processors/%s' % (config_dict['host'], config_dict['port'] ,processor_id)
     processor_stats = get_stats(headers,processor_url,set_ssl())
-    #print "Processor ID: ", processor_stats['component']['id']
-    #print "State", processor_stats['component']['state']
-    #print "Stats : ",json.dumps(processor_stats['status']['aggregateSnapshot'],indent =2 )
     return processor_stats
   else:
     return token
@@ -129,16 +123,14 @@ def get_pg_details(pg_id='root'):
     list_pgs = get_stats(headers, list_url, set_ssl())
     pgstats = {}
     for p in list_pgs['processGroups'] :
-      #print json.dumps(p,indent=2)
-      if(int(p['status']['aggregateSnapshot']['flowFilesQueued']) > 0 or int(p['status']['aggregateSnapshot']['activeThreadCount']) > 0 or int(p['status']['aggregateSnapshot']['bytesQueued']) > 0):
+      if(int(p['status']['aggregateSnapshot']['flowFilesQueued']) > 0 or
+         int(p['status']['aggregateSnapshot']['activeThreadCount']) > 0 or
+         int(p['status']['aggregateSnapshot']['bytesQueued']) > 0):
         pgstats[p['id']] = {}
         pgstats[p['id']]['name'] = p['status']['aggregateSnapshot']['name']
         pgstats[p['id']]['flowFilesQueued'] = p['status']['aggregateSnapshot']['flowFilesQueued']
         pgstats[p['id']]['bytesQueued'] = p['status']['aggregateSnapshot']['bytesQueued']
         pgstats[p['id']]['activeThreadCount'] = p['status']['aggregateSnapshot']['activeThreadCount']
-        # print p['id'] + " " + str(p['status']['aggregateSnapshot']['name']) +  " " + str(p['status']['aggregateSnapshot']['flowFilesQueued'])
-        # if(p['status']['aggregateSnapshot']['flowFilesQueued'] > 0):
-        #  print "{y:%.2f %s %s %s" % (float(p['status']['aggregateSnapshot']['flowFilesQueued'])*100.0/(flow_status['controllerStatus']['flowFilesQueued'] * 1.0) , ", label:\"" , str(p['status']['aggregateSnapshot']['id']),"\"},")
     return pgstats
   else:
     return token
