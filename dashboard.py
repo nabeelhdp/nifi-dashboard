@@ -35,16 +35,16 @@ def read_nifi_pg_stats(pg_stats):
 
 def read_nifi_system_stats(stats):
   system_stat = {}
-  system_stat['usedHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['usedHeapBytes']
-  system_stat['freeHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['freeHeapBytes']
-  system_stat['totalHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['totalHeapBytes']
-  system_stat['freeNonHeap']  = stats['systemDiagnostics']['aggregateSnapshot']['freeNonHeapBytes']
-  system_stat['usedNonHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['usedNonHeapBytes']
-  system_stat['totalNonHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['totalNonHeapBytes']
-  system_stat['loadAverage'] = stats['systemDiagnostics']['aggregateSnapshot']['processorLoadAverage']
-  system_stat['flowfileRepofree'] = stats['systemDiagnostics']['aggregateSnapshot']['flowFileRepositoryStorageUsage']['freeSpaceBytes']
-  system_stat['flowfileRepoUsed'] = stats['systemDiagnostics']['aggregateSnapshot']['flowFileRepositoryStorageUsage']['usedSpaceBytes']
-  system_stat['flowfileRepoTotal'] = stats['systemDiagnostics']['aggregateSnapshot']['flowFileRepositoryStorageUsage']['totalSpaceBytes']
+  system_stat['usedHeap'] = stats['usedHeapBytes']
+  system_stat['freeHeap'] = stats['freeHeapBytes']
+  system_stat['totalHeap'] = stats['totalHeapBytes']
+  system_stat['freeNonHeap']  = stats['freeNonHeapBytes']
+  system_stat['usedNonHeap'] = stats['usedNonHeapBytes']
+  system_stat['totalNonHeap'] = stats['totalNonHeapBytes']
+  system_stat['loadAverage'] = stats['processorLoadAverage']
+  system_stat['flowfileRepofree'] = stats['flowFileRepositoryStorageUsage']['freeSpaceBytes']
+  system_stat['flowfileRepoUsed'] = stats['flowFileRepositoryStorageUsage']['usedSpaceBytes']
+  system_stat['flowfileRepoTotal'] = stats['flowFileRepositoryStorageUsage']['totalSpaceBytes']
 
   return system_stat
 
