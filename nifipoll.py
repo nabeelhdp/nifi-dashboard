@@ -95,7 +95,7 @@ def get_system_diagnostics():
     headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Authorization': token }
     diagnostic_url = 'https://%s:%d/nifi-api/system-diagnostics' % (config_dict['host'], config_dict['port'])
     system_diagnostics = get_stats(headers, diagnostic_url, set_ssl())
-    return system_diagnostics
+    return system_diagnostics['systemDiagnostics']['aggregateSnapshot']
   else:
     return token
 
