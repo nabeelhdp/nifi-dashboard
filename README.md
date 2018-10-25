@@ -1,4 +1,4 @@
-# Poll NiFi stats
+# NiFi Dashboard
 Authenticate against NiFi login and poll stats from NiFi instance
 
 To view system diagnostics on console :
