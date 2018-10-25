@@ -7,7 +7,7 @@ Update `config.ini` and run as
 `python nifipoll.py`
 
 For dashboard, copy `bottle.py` from bottle webpage and drop in the same directory as the `nifi_poll.py`
-Place canvas.min.js into a new folder called static
+Place `canvas.min.js` into a new folder called static ( Note: The trial expires in 2 months. So purchase full version for production use)
 
 Run
 
