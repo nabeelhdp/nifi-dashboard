@@ -1,4 +1,3 @@
-
 import json
 from bottle import route, run, template, static_file, request
 from nifipoll import get_flow_status,get_system_diagnostics,get_processor_stats,get_pg_details
@@ -6,11 +5,15 @@ import socket
 
 def get_nifi_stats(pg="root"):
 
-  nifi_response = {}
-  nifi_response = get_pg_details(pg)
-  return nifi_response
+  nifi_pg_stats = {}
+  nifi_pg_stats = get_pg_details(pg)
+  nifi_system_stats = {}
+  nifi_system_stats = get_system_diagnostics()
 
-def read_nifi_stats(stats):
+  return nifi_pg_stats,nifi_system_stats
+
+def read_nifi_pg_stats(pg_stats):
+
   name = {}
   flowFilesQueued = {}
   bytesQueued = {}
@@ -19,49 +22,53 @@ def read_nifi_stats(stats):
   activeThreadCount = {}
   total_activeThreadCount = 426
 
-  for key,value in stats.iteritems():
+  for key,value in pg_stats.iteritems():
 
-      name[key] = value['name']
-      print value['name']
-
-      flowFilesQueued[key] = int(value['flowFilesQueued'])
-      total_flowFilesQueued += int(value['flowFilesQueued'])
-
-      bytesQueued[key] = int(value['bytesQueued'])
-      total_bytesQueued += int(value['bytesQueued'])
-
-      activeThreadCount[key] = int(value['activeThreadCount'])
+    name[key] = value['name']
+    flowFilesQueued[key] = int(value['flowFilesQueued'])
+    total_flowFilesQueued += int(value['flowFilesQueued'])
+    bytesQueued[key] = int(value['bytesQueued'])
+    total_bytesQueued += int(value['bytesQueued'])
+    activeThreadCount[key] = int(value['activeThreadCount'])
 
   return name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount
 
+def read_nifi_system_stats(stats):
+  system_stat = {}
+  system_stat['usedHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['usedHeapBytes']
+  system_stat['freeHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['freeHeapBytes']
+  system_stat['totalHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['totalHeapBytes']
+  system_stat['freeNonHeap']  = stats['systemDiagnostics']['aggregateSnapshot']['freeNonHeapBytes']
+  system_stat['usedNonHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['usedNonHeapBytes']
+  system_stat['totalNonHeap'] = stats['systemDiagnostics']['aggregateSnapshot']['totalNonHeapBytes']
+  system_stat['loadAverage'] = stats['systemDiagnostics']['aggregateSnapshot']['processorLoadAverage']
+  system_stat['flowfileRepofree'] = stats['systemDiagnostics']['aggregateSnapshot']['flowFileRepositoryStorageUsage']['freeSpaceBytes']
+  system_stat['flowfileRepoUsed'] = stats['systemDiagnostics']['aggregateSnapshot']['flowFileRepositoryStorageUsage']['usedSpaceBytes']
+  system_stat['flowfileRepoTotal'] = stats['systemDiagnostics']['aggregateSnapshot']['flowFileRepositoryStorageUsage']['totalSpaceBytes']
+
+  return system_stat
 
 @route('/static/:path#.+#', name='static')
 def static(path):
     return static_file(path, root='static')
 
-@route('/table')
-def serve_homepage():
-    return template('disp_table',pgnames = name, dataparam = bytesQueued, cases = len(name))
-
-@route('/pie', method=['POST','GET'])
+@route('/dashboard', method=['POST','GET'])
 def serve_pie():
-    nifi_response = {}
+    nifi_pg_stats = {}
+    nifi_system_stats = {}
+
     if (request.forms.get('pgid')) :
-      print('pgid = ' + request.forms.get('pgid'))
-      nifi_response = get_nifi_stats(request.forms.get('pgid'))
+      nifi_pg_stats, nifi_system_stats = get_nifi_stats(request.forms.get('pgid'))
     else :
-      nifi_response = get_nifi_stats()
-    name,ffq,t_ffq,bq,t_bq,atc,t_atc = read_nifi_stats(nifi_response)
+      nifi_pg_stats, nifi_system_stats = get_nifi_stats()
+
+    name,flowFilesQueued,total_flowFilesQueued,bytesQueued,total_bytesQueued,activeThreadCount,total_activeThreadCount = read_nifi_pg_stats(nifi_pg_stats)
+    system_stats = read_nifi_system_stats(nifi_system_stats)
+
     return template(
-             'pie', pgnames = json.dumps(name) ,
-             flowfilesQueued = json.dumps(ffq), total = t_ffq )
-
-@route('/donut')
-def serve_donut():
-    nifi_response = {}
-    nifi_response = get_nifi_stats()
-    name,ffq,t_ffq,bq,t_bq,atc,t_atc = read_nifi_stats(nifi_response)
-    return template('donut', pgnames = json.dumps(name) , flowfilesQueued = json.dumps(ffq), total = t_ffq )
-
+             'dashboard', system_stats = json.dumps(system_stats), pgnames = json.dumps(name) ,
+             activeThreads = json.dumps(activeThreadCount), total_threads = int(total_activeThreadCount),
+             flowfilesQueued = json.dumps(flowFilesQueued), total_flowqueue = int(total_flowFilesQueued),
+             bytesQueued = json.dumps(bytesQueued), total_bytes = int(total_bytesQueued) )
 
 run(host=socket.getfqdn(), port=8080, debug=True)
