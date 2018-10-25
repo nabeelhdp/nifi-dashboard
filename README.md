@@ -6,7 +6,8 @@ To view system diagnostics on console :
 Update `config.ini` and run as 
 `python nifipoll.py`
 
-For dashboard, copy bottle.py from bottle webpage and drop in the same directory as the `nifi_poll.py`
+For dashboard, copy `bottle.py` from bottle webpage and drop in the same directory as the `nifi_poll.py`
+Place canvas.min.js into a new folder called static
 
 Run
 
@@ -14,6 +15,6 @@ Run
 
 Wait till the url is shown on console.
 
-Once seen, open browser and paste url followed by /pie or /table to view respective visualizations
+Once seen, open browser and paste url followed by /dashboard
 
-Make sure canvas.min.js is copied to the static folder.
+Eg. http://nifinode.tld/8080/dashboard
