@@ -12,8 +12,11 @@ window.onload = function showChart(){
   var flow_dataPoints = []
   var bytes_dataPoints = []
   var thread_dataPoints = []
+  var heap_dataPoints = []
+  var nonheap_dataPoints = []
+  var flowfilerepousage_dataPoints = []
 
-  var system_stats = JSON.parse('{{!system_stats}}');
+  var system_stat = JSON.parse('{{!system_stats}}');
   var pgnames = JSON.parse('{{!pgnames}}');
   var flowfiles = JSON.parse('{{!flowfilesQueued}}');
   var bytesqueued = JSON.parse('{{!bytesQueued}}');
@@ -57,7 +60,8 @@ window.onload = function showChart(){
 
   var thread_chart = new CanvasJS.Chart("chartContainer3", {
   animationEnabled: true,
-  title: {   text: "Active Thread Counts by Processor Group" },
+  title: {   text: "Load Average: " + system_stat['loadAverage'] + " \n Active Thread Counts by Processor Group"},
+  //system_stat['loadAverage'] processorLoadAverage']
   data: setData(thread_dataPoints,'pie')
   });
 
@@ -70,9 +74,46 @@ window.onload = function showChart(){
   }
   thread_dataPoints.push({y: idle*100/total_threadcount,label: "Non-active threads"})
 
+  var heap_chart = new CanvasJS.Chart("chartContainer4", {
+  animationEnabled: true,
+  title: {  text: "Heap Usage" },
+  data: setData(heap_dataPoints,'pie')
+  });
+
+  h_y_val = (system_stat['usedHeap']*100/system_stat['totalHeap'])
+  heap_dataPoints.push({y: h_y_val,label: "Used Heap", click: onClick})
+  h_y_val = (system_stat['freeHeap']*100/system_stat['totalHeap'])
+  heap_dataPoints.push({y: h_y_val,label: "Free Heap", click: onClick})
+
+  var nonheap_chart = new CanvasJS.Chart("chartContainer5", {
+  animationEnabled: true,
+  title: {  text: "Non Heap Usage" },
+  data: setData(nonheap_dataPoints,'pie')
+  });
+
+  nh_y_val = (system_stat['usedNonHeap']*100/system_stat['totalNonHeap'])
+  nonheap_dataPoints.push({y: nh_y_val,label: "Used Heap", click: onClick})
+  nh_y_val = (system_stat['freeNonHeap']*100/system_stat['totalNonHeap'])
+  nonheap_dataPoints.push({y: nh_y_val,label: "Free Heap", click: onClick})
+
+  var flowfilerepousage_chart = new CanvasJS.Chart("chartContainer6", {
+  animationEnabled: true,
+  title: {  text: "FlowFile Repository Storage Usage" },
+  data: setData(flowfilerepousage_dataPoints,'pie')
+  });
+
+  ff_y_val = (system_stat['flowfileRepoUsed']*100/system_stat['flowfileRepoTotal'])
+  flowfilerepousage_dataPoints.push({y: nh_y_val,label: "Used Heap", click: onClick})
+  ff_y_val = (system_stat['flowfileRepofree']*100/system_stat['flowfileRepoTotal'])
+  flowfilerepousage_dataPoints.push({y: nh_y_val,label: "Free Heap", click: onClick})
+
+
   flow_chart.render();
   bytes_chart.render();
   thread_chart.render();
+  heap_chart.render();
+  nonheap_chart.render();
+  flowfilerepousage_chart.render();
 
   function setData(dataPoints,type){
   var data_arr =  [{
@@ -90,11 +131,14 @@ window.onload = function showChart(){
   }
 };
 
-</script>
 
-<div id="chartContainer1" style="height: 370px; width: 48%;display: inline-block"></div>
-<div id="chartContainer2" style="height: 370px; width: 48%;display: inline-block"></div><br>
-<div id="chartContainer3" style="height: 370px; width: 33%;display: inline-block"></div>
+</script>
+<div id="chartContainer1" style="height: 370px; width: 33%;display: inline-block"></div>
+<div id="chartContainer2" style="height: 370px; width: 33%;display: inline-block"></div>
+<div id="chartContainer3" style="height: 370px; width: 33%;display: inline-block"></div><br><br>
+<div id="chartContainer4" style="height: 370px; width: 33%;display: inline-block"></div>
+<div id="chartContainer5" style="height: 370px; width: 33%;display: inline-block"></div>
+<div id="chartContainer6" style="height: 370px; width: 33%;display: inline-block"></div>
 
 <script src="static/canvasjs.min.js"></script>
 </body>
