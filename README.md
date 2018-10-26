@@ -19,3 +19,5 @@ Wait till the url is shown on console.
 Once seen, open browser and paste url followed by /dashboard
 
 Eg. http://nifinode.tld/8080/dashboard
+
+![Dashboard sample](https://github.com/nabeelhdp/NiFi-Dashboard/blob/master/SingleSnapshotView.PNG)
