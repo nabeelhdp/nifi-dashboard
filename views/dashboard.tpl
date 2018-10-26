@@ -81,9 +81,9 @@ window.onload = function showChart(){
   });
 
   h_y_val = (system_stat['usedHeap']*100/system_stat['totalHeap'])
-  heap_dataPoints.push({y: h_y_val,label: "Used Heap", click: onClick})
+  heap_dataPoints.push({y: h_y_val,label: "Used Heap"})
   h_y_val = (system_stat['freeHeap']*100/system_stat['totalHeap'])
-  heap_dataPoints.push({y: h_y_val,label: "Free Heap", click: onClick})
+  heap_dataPoints.push({y: h_y_val,label: "Free Heap"})
 
   var nonheap_chart = new CanvasJS.Chart("chartContainer5", {
   animationEnabled: true,
@@ -92,9 +92,9 @@ window.onload = function showChart(){
   });
 
   nh_y_val = (system_stat['usedNonHeap']*100/system_stat['totalNonHeap'])
-  nonheap_dataPoints.push({y: nh_y_val,label: "Used Heap", click: onClick})
+  nonheap_dataPoints.push({y: nh_y_val,label: "Used Heap"})
   nh_y_val = (system_stat['freeNonHeap']*100/system_stat['totalNonHeap'])
-  nonheap_dataPoints.push({y: nh_y_val,label: "Free Heap", click: onClick})
+  nonheap_dataPoints.push({y: nh_y_val,label: "Free Heap"})
 
   var flowfilerepousage_chart = new CanvasJS.Chart("chartContainer6", {
   animationEnabled: true,
@@ -103,9 +103,9 @@ window.onload = function showChart(){
   });
 
   ff_y_val = (system_stat['flowfileRepoUsed']*100/system_stat['flowfileRepoTotal'])
-  flowfilerepousage_dataPoints.push({y: nh_y_val,label: "Used Heap", click: onClick})
+  flowfilerepousage_dataPoints.push({y: nh_y_val,label: "Used Heap"})
   ff_y_val = (system_stat['flowfileRepofree']*100/system_stat['flowfileRepoTotal'])
-  flowfilerepousage_dataPoints.push({y: nh_y_val,label: "Free Heap", click: onClick})
+  flowfilerepousage_dataPoints.push({y: nh_y_val,label: "Free Heap"})
 
 
   flow_chart.render();
