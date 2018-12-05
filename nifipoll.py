@@ -41,7 +41,7 @@ def get_auth_request():
   config_dict = get_config_params()
   data = {}
   data['username'] = config_dict['user']
-  data['password'] = 'HWX@Bugis123'
+  data['password'] = 'XXXXX'
   url_values = urllib.urlencode(data)
   token_url = "https://%s:%d/nifi-api/access/token" % (config_dict['host'], config_dict['port'])
   headers = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
